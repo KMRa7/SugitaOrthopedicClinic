@@ -78,7 +78,11 @@
       <option>マシンピラテスリフォーマー90分</option>
     </select>
 
-    <!-- ④ 初回のみ：通院履歴（任意・選択） -->
+    <!-- ④ お悩み（任意・自由記載） -->
+    <div class="label">お悩み <span class="optional">任意</span></div>
+    <textarea id="concern" placeholder="例：足首を捻った"></textarea>
+
+    <!-- ⑤ 初回のみ：通院履歴（任意・選択） -->
     <div id="visitHistoryWrap" class="optional-wrap">
       <div class="label">当院への通院履歴（初回予約の方のみ）</div>
       <select id="visitHistory" aria-label="通院履歴（初回のみ）">
@@ -86,12 +90,6 @@
         <option>通院履歴有り</option>
         <option>通院履歴無し</option>
       </select>
-    </div>
-
-    <!-- ⑤ 初回のみ：症状（任意・自由記載） -->
-    <div id="symptomWrap" class="optional-wrap">
-      <div class="label">症状（初回予約の方のみ）</div>
-      <textarea id="symptom" placeholder="例：昨日足首を捻った"></textarea>
     </div>
 
     <!-- ⑥ 希望日時（第1〜第3：第1は必須／第2・第3は任意） -->
@@ -136,7 +134,7 @@
       const el=document.getElementById(id);
       if(el) localStorage.setItem(id, el.value);
     }
-    ["name","phone","menu","visitHistory","symptom","note"].forEach(id=>{
+    ["name","phone","menu","concern","visitHistory","note"].forEach(id=>{
       document.addEventListener("input",(e)=>{ if(e.target && e.target.id===id) saveInput(id); });
       const el=document.getElementById(id);
       if(el && el.tagName==="SELECT"){ el.addEventListener("change", ()=>saveInput(id)); }
@@ -146,7 +144,6 @@
     function toggleInitialOnlyFields(){
       const isInitial = document.getElementById("menu").value === "初回予約";
       document.getElementById("visitHistoryWrap").style.display = isInitial ? "block" : "none";
-      document.getElementById("symptomWrap").style.display      = isInitial ? "block" : "none";
     }
 
     // 時間プルダウン生成（9:00〜20:30 / 30分刻み）
@@ -183,7 +180,7 @@
       catch (e) { console.error("LIFF初期化に失敗:", e); }
 
       // 復元
-      ["name","phone","menu","visitHistory","symptom","note"].forEach(id=>{
+      ["name","phone","menu","concern","visitHistory","note"].forEach(id=>{
         const v = localStorage.getItem(id);
         if(v) { const el=document.getElementById(id); if(el) el.value = v; }
       });
@@ -234,12 +231,12 @@
       const date3Date  = document.getElementById("date3Date").value;
       const date3Time  = document.getElementById("date3Time").value;
 
-      const note   = document.getElementById("note").value.trim();
+      const concern = document.getElementById("concern").value.trim();
+      const note    = document.getElementById("note").value.trim();
 
       // 初回のみ任意項目
       const isInitial = (menu === "初回予約");
       const visitHistory = isInitial ? document.getElementById("visitHistory").value : "";
-      const symptom      = isInitial ? document.getElementById("symptom").value.trim() : "";
 
       // 必須チェック（第1のみ必須：日付＋時間）
       if(!name){ alert("お名前をご入力ください。"); return; }
@@ -251,10 +248,9 @@
       }
 
       // メッセージ整形
-      let extra = "";
-      if(isInitial){
-        if(visitHistory) extra += `\n通院履歴：${visitHistory}`;
-        if(symptom)      extra += `\n症状：${symptom}`;
+      let extra = `\nお悩み：${concern || "（未入力）"}`;
+      if(isInitial && visitHistory){
+        extra += `\n通院履歴：${visitHistory}`;
       }
 
       const message =
